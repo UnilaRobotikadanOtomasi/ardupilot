@@ -1,0 +1,193 @@
+# hw definition file for processing by chibios_pins.py
+# for stm32f4ve - stm32f407vet6 mcu
+# with on board SPI flash chip, microSD card, and miniUSB connector
+
+# MCU class and specific type
+MCU STM32F4xx STM32F407xx
+
+# board ID for firmware load
+APJ_BOARD_ID 3
+
+# crystal frequency
+OSCILLATOR_HZ 8000000
+STM32_PLLM_VALUE 8
+
+# board voltage
+STM32_VDD 330U
+
+# ChibiOS system timer
+STM32_ST_USE_TIMER 5
+
+# flash size
+FLASH_SIZE_KB 1024
+FLASH_RESERVE_START_KB 64
+
+# order of I2C buses
+I2C_ORDER I2C2 I2C1
+
+# order of UARTs     
+# ~ UART_ORDER OTG1
+# ~ UART_ORDER OTG1 USART1
+# ~ UART_ORDER OTG1 UART4 USART1
+UART_ORDER  OTG1 USART3 USART2 
+
+
+########## PINS ########## 
+
+PA2 BATT_VOLTAGE_SENS ADC1 SCALE(1)
+# PWM output for buzzer
+PA15 TIM2_CH1 TIM2 GPIO(77) ALARM
+
+# Now we define the pins that USB is connected on.
+PA11 OTG_FS_DM OTG1
+PA12 OTG_FS_DP OTG1
+
+# These are the pins for SWD debugging with a STlinkv2 or black-magic probe.
+PA13 JTMS-SWDIO SWD
+PA14 JTCK-SWCLK SWD
+
+# Now the first SPI bus. At minimum you need SCK, MISO and MOSI pin
+# definitions. You can add speed modifiers if you want them, otherwise
+# the defaults for the peripheral class are used.
+
+# primary SPI bus for sensors
+PA5 SPI1_SCK SPI1
+PA6 SPI1_MISO SPI1
+PA7 SPI1_MOSI SPI1
+
+# the 2nd SPI bus (currently empty, can be used for external?)
+PB13 SPI2_SCK SPI2
+PB14 SPI2_MISO SPI2
+PB15 SPI2_MOSI SPI2
+
+# the 3nd SPI bus where FLASH memory chip is
+PB3 SPI3_SCK SPI3
+PB4 SPI3_MISO SPI3
+PB5 SPI3_MOSI SPI3
+
+# This defines some input pins, currently unused.
+# PB2 BOOT1 INPUT
+
+# this is the pin that senses USB being connected. It is an input pin
+# setup as OPENDRAIN
+PA9 VBUS INPUT OPENDRAIN
+
+# UART1 as board 2.1.5 for serial 3 gps
+#PA9 USART1_TX USART1
+#PA10 USART1_RX USART1
+
+# USART2 serial2 telem2
+PD5 USART2_TX USART2 NODMA
+PD6 USART2_RX USART2
+
+# USART3 serial3 telem1
+PD8 USART3_TX USART3 NODMA
+PD9 USART3_RX USART3
+
+#PC10 UART4_TX UART4 NODMA
+#PC11 UART4_RX UART4 
+
+# SHARE dma with I2C2_TX
+#PC12 UART5_TX UART5 NODMA
+#PD2  UART5_RX UART5 
+
+# Now the first I2C bus. The pin speeds are automatically setup
+# correctly, but can be overridden here if needed.
+PB8 I2C1_SCL I2C1
+PB9 I2C1_SDA I2C1
+
+# the 2nd I2C bus
+PB10 I2C2_SCL I2C2
+PB11 I2C2_SDA I2C2
+
+# Now setup the default battery pins driver analog pins and default
+# scaling for the power brick.
+define HAL_BATT_VOLT_PIN 2
+define HAL_BATT_CURR_PIN 3
+define HAL_BATT_VOLT_SCALE 10.1
+define HAL_BATT_CURR_SCALE 17.0
+
+
+# Now setup the pins for the microSD card, if available.
+PC8 SDIO_D0 SDIO
+PC9 SDIO_D1 SDIO
+PC10 SDIO_D2 SDIO
+PC11 SDIO_D3 SDIO
+PC12 SDIO_CK SDIO
+PD2 SDIO_CMD SDIO
+
+# The CS pin for FRAM (ramtron). This one is marked as using
+# SPEED_VERYLOW, which matches the HAL_PX4 setup.
+PB0 FRAM_CS CS SPEED_VERYLOW
+
+# This defines the CS pin for the magnetometer and first IMU. Note
+# that CS pins are software controlled, and are not tied to a particular
+# SPI bus.
+# PC1 MAG_CS CS
+# PC2 MPU_CS CS
+# PD7 BARO_CS CS
+PD7 BMP280_CS CS
+
+# Now we start defining some PWM pins. We also map these pins to GPIO
+# values, so users can set BRD_PWM_COUNT to choose how many of the PWM
+# outputs on the primary MCU are setup as PWM and how many as
+# GPIOs. To match HAL_PX4 we number the GPIOs for the PWM outputs
+# starting at 50.
+PE14 TIM1_CH4 TIM1 PWM(1) GPIO(50)
+PE13 TIM1_CH3 TIM1 PWM(2) GPIO(51)
+PE11 TIM1_CH2 TIM1 PWM(3) GPIO(52)
+PE9  TIM1_CH1 TIM1 PWM(4) GPIO(53)
+PD13 TIM4_CH2 TIM4 PWM(5) GPIO(54)
+PD14 TIM4_CH3 TIM4 PWM(6) GPIO(55)
+
+define BOARD_PWM_COUNT_DEFAULT 4
+
+# The DEVID values and device names are chosen to match the PX4 port
+# of ArduPilot so users don't need to re-do their accel and compass
+# calibrations when moving to ChibiOS.
+
+# SPI Device table 
+#SPIDEV mpu6000    SPI1 DEVID1 MPU6000_CS MODE3 1*MHZ 8*MHZ
+#SPIDEV sdcard     SPI2 DEVID2 SDCARD_CS MODE0 400*KHZ 25*MHZ
+#SPIDEV bmp280     SPI3 DEVID3 BMP280_CS MODE3 1*MHZ 8*MHZ
+#SPIDEV osd        SPI3 DEVID4 OSD_CS MODE0 10*MHZ 10*MHZ
+
+#define CONFIG_HAL_BOARD_SUBTYPE HAL_BOARD_SUBTYPE_CHIBIOS_STM32F407VE
+
+
+# one IMU
+#IMU Invensense SPI:mpu6000 ROTATION_YAW_ 180
+IMU MPU MPU6050 I2C:0:0x68
+
+# one baro
+#BARO BMP280 SPI:bmp280
+
+# We need to tell HAL_ChibiOS/Storage.cpp how much storage is
+# available (in bytes).
+
+# Now define fallback storage location is flash if no FRAM
+# fitted. This needs to be carefully chosen to align with your
+# bootloader. The flash storage system needs two sectors, and the
+# sectors must be at least 20% larger than HAL_STORAGE_SIZE.
+define STORAGE_FLASH_PAGE 1
+define HAL_STORAGE_SIZE 15360
+
+# Enable FAT filesystem support (needs a microSD defined via SDIO).
+define HAL_OS_FATFS_IO 1
+
+define HAL_BOARD_LOG_DIRECTORY "/APM/LOGS"
+define HAL_BOARD_TERRAIN_DIRECTORY "/APM/TERRAIN"
+
+# This defines the default maximum clock on I2C devices.
+define HAL_I2C_MAX_CLOCK 100000
+
+# no built-in compass, but probe the i2c bus for all possible
+# external compass types
+define ALLOW_ARM_NO_COMPASS
+define HAL_COMPASS_DEFAULT HAL_COMPASS_NONE
+define HAL_PROBE_EXTERNAL_I2C_COMPASSES
+define HAL_I2C_INTERNAL_MASK 0
+define HAL_COMPASS_AUTO_ROT_DEFAULT 2
+
+
+
